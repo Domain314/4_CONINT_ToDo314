@@ -1,0 +1,118 @@
+#!/usr/bin/env node
+
+// REFACTORING: Moved Module Dependecies
+/**
+ * Module dependencies.
+ */
+const db = require('../db/db');
+const app = require('../app');
+const debug = require('debug')('backend:server');
+const http = require('http');
+
+// Magic Numbers
+// REFACTORING: 
+const RETRY_INTERVAL = 1000;
+
+async function waitForConnection(db) {
+  try {
+    await db.authenticate();
+  } catch (error) {
+    console.log(`Could not connect, retrying in ${RETRY_INTERVAL} milliseconds...`);
+    await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL));
+    await waitForConnection(db);
+  }
+}
+
+// Callback Hell + Mixing sync with async
+// REFACTORING: + 'async'
+async function start() {
+  // REFACTORING: + 'async' , - then()
+  await waitForConnection(db);
+  await db.sync({ force: true });
+  console.log("All models were synchronized successfully.")
+  startServer();
+}
+
+function startServer() {
+
+  // REFACTORING: const
+  const port = normalizePort(process.env.PORT || '3000');
+  const host = normalizePort(process.env.HOST || 'localhost');
+
+  app.set('port', port);
+  app.set('host', host);
+
+  const server = http.createServer(app);
+
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+
+  /**
+   * Normalize a port into a number, string, or false.
+   */
+
+  function normalizePort(val) {
+    const port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+      // named pipe
+      return val;
+    }
+
+    if (port >= 0) {
+      // port number
+      return port;
+    }
+
+    return false;
+  }
+
+  /**
+   * Event listener for HTTP server "error" event.
+   */
+
+  function onError(error) {
+    if (error.syscall !== 'listen') {
+      throw error;
+    }
+
+    var bind = typeof port === 'string'
+      ? 'Pipe ' + port
+      : 'Port ' + port;
+
+    /**
+     * handle specific listen errors with friendly messages
+     */
+
+    switch (error.code) {
+      case 'EACCES':
+        // REFACTORING: String manipulation
+        console.error(`${bind} requires elevated privileges`);
+        process.exit(1);
+        break;
+      case 'EADDRINUSE':
+        console.error(`${bind} is already in use`);
+        process.exit(1);
+        break;
+      default:
+        throw error;
+    }
+  }
+
+  /**
+   * Event listener for HTTP server "listening" event.
+   */
+
+  function onListening() {
+    var addr = server.address();
+    // REFACTORING: String manipulation
+    var bind = typeof addr === 'string'
+      ? `pipe + ${addr}`
+      : `port + ${addr.port}`;
+    debug('Listening on ' + bind);
+    console.log('Listening on ' + bind);
+  }
+}
+
+start()
