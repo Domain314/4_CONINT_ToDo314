@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
 // REFACTORING: Moved Module Dependecies
-/**
- * Module dependencies.
- */
+/* Module dependencies. */
 const db = require('../db/db');
 const app = require('../app');
 const debug = require('debug')('backend:server');
@@ -35,9 +33,7 @@ async function start() {
   startServer();
 }
 
-/**
- * Normalize a port into a number, string, or false.
- */
+/* Normalize a port into a number, string, or false. */
 // Nested Functions
 // REFACTORING: moved functions out of StartServer() for better readability and maintainability.
 function normalizePort(val) {
@@ -56,9 +52,7 @@ function normalizePort(val) {
   return false;
 }
 
-/**
-   * Event listener for HTTP server "error" event.
-   */
+/* Event listener for HTTP server "error" event. */
 // Nested Functions
 // REFACTORING: moved functions out of StartServer() for better readability and maintainability.
 function onError(error, port) {
@@ -70,10 +64,7 @@ function onError(error, port) {
     ? 'Pipe ' + port
     : 'Port ' + port;
 
-  /**
-   * handle specific listen errors with friendly messages
-   */
-
+  /* handle specific listen errors with friendly messages */
   switch (error.code) {
     case 'EACCES':
       // REFACTORING: String manipulation: Consistently used template literals for string manipulation.
@@ -89,10 +80,7 @@ function onError(error, port) {
   }
 }
 
-/**
-   * Event listener for HTTP server "listening" event.
-   */
-
+/* Event listener for HTTP server "listening" event. */
 function onListening() {
   var addr = server.address();
   // REFACTORING: String manipulation: Consistently used template literals for string manipulation.
@@ -118,7 +106,6 @@ function startServer() {
   // REFACTORING: arrow functions, instead of function signature
   server.on('error', (error) => onError(error, port));
   server.on('listening', () => onListening(server));
-
 }
 
 start()
