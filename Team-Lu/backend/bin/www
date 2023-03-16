@@ -33,6 +33,7 @@ async function start() {
   startServer();
 }
 
+// REFACTORING: DISPENSIBLES: shorter comments for better readability
 /* Normalize a port into a number, string, or false. */
 // Nested Functions
 // REFACTORING: moved functions out of StartServer() for better readability and maintainability.
