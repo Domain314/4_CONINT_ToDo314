@@ -22,6 +22,7 @@ services:
       timeout: 5s
       retries: 2
   nodeapp:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -32,11 +33,11 @@ services:
         condition: service_healthy
 
     environment:
-      - DB_HOST=mariadb
-      - DB_PORT=3306
+      - DB_DIALECT=mariadb
+      - DB_HOST=mariadb:3306
       - DB_NAME=tododot
       - DB_USER=todo-admin
-      - DB_PASSWORD=admin-pw
+      - DB_PW=admin-pw
 
 volumes:
   db-data:

@@ -82,7 +82,8 @@ function onError(error, port) {
 }
 
 /* Event listener for HTTP server "listening" event. */
-function onListening() {
+function onListening(server) {
+  console.log(server)
   var addr = server.address();
   // REFACTORING: String manipulation: Consistently used template literals for string manipulation.
   var bind = typeof addr === 'string'
