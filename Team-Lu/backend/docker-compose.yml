@@ -21,6 +21,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 2
+
+      
   nodeapp:
     restart: always
     build:
