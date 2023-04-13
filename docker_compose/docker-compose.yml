@@ -1,0 +1,27 @@
+version: "3.5"
+
+services:
+  gitlab-service:
+    image: gitlab/gitlab-ce:latest
+    restart: unless-stopped
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        gitlab_rails['gitlab_shell_ssh_port'] = 8822
+    ports:
+      - "8833:80"
+      - "8822:22"
+    networks:
+      - gitlab-network
+
+  gitlab-runner-service:
+    image: gitlab/gitlab-runner:alpine
+    restart: unless-stopped
+    depends_on:
+      - gitlab-service
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitlab-network
+
+networks:
+  gitlab-network: {}
