@@ -1,0 +1,39 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-job:
+  tags:
+    - tag
+  stage: build
+  script:
+    - echo "Compiling code ..."
+    - echo "Compile complete"
+
+unit-test-job:
+  tags:
+    - tag
+  stage: test
+  script:
+    - echo "Running unit tests ..."
+    - sleep 10
+    - echo "Code coverage 90%"
+
+static-code-analysis-job:
+  tags:
+    - tag
+  stage: test
+  script:
+    - echo "Running linting ..."
+    - sleep 10
+    - echo "Passed"
+
+deploy-job:
+  tags:
+    - tag
+  stage: deploy
+  script:
+    - echo "Deploy app ..."
+    - sleep 10
+    - echo "Deploy Successful"
