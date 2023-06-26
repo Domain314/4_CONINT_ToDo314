@@ -1,37 +1,137 @@
 version: 2.1
-jobs:
-  build:
+
+executors:
+  docker-executor:
     docker:
-      - image: cimg/base:stable
+      - image: circleci/node:14-buster
+
+jobs:
+  lint-backend:
+    executor: docker-executor
+    working_directory: ~/project-name/backend
     steps:
-      - checkout
-      - run: npm install
-      - run: npm run lint
-      - run: npm run test
+      - checkout:
+          path: ~/project-name
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - ./node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Run Lint
+          command: npm run lint
+
+  lint-frontend:
+    executor: docker-executor
+    working_directory: ~/project-name/frontend
+    steps:
+      - checkout:
+          path: ~/project-name
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - ./node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Run Lint
+          command: npm run lint
+
+  test-backend:
+    executor: docker-executor
+    working_directory: ~/project-name/backend
+    steps:
+      - checkout:
+          path: ~/project-name
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - run:
+          name: Run Tests
+          command: npm run test
+
+  test-frontend:
+    executor: docker-executor
+    working_directory: ~/project-name/frontend
+    steps:
+      - checkout:
+          path: ~/project-name
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - run:
+          name: Run Tests
+          command: npm run test
+
+  build-and-push-docker-images:
+    machine:
+      enabled: true
+    steps:
+      - checkout:
+          path: ~/project-name
+      - run:
+          name: Build and push Docker images
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker-compose build
+            docker-compose push
+
   deploy:
     machine:
       enabled: true
     steps:
-      - checkout
       - run:
-          name: Install Docker Compose
+          name: Deploy to AWS
           command: |
-            set -x
-            curl -L https://github.com/docker/compose/releases/download/1.25.5/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - run:
-          name: Deploy to Docker
-          command: |
-            docker-compose up -d
+            ./deploy.sh # You need to write this script to handle deployment to AWS.
+
 workflows:
   version: 2
-  build-and-deploy:
+  build-test-and-deploy:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
+      - lint-backend:
           filters:
             branches:
-              only: deploy/production
+              only:
+                - main
+      - lint-frontend:
+          filters:
+            branches:
+              only:
+                - main
+      - test-backend:
+          filters:
+            branches:
+              only:
+                - main
+      - test-frontend:
+          filters:
+            branches:
+              only:
+                - main
+      - build-and-push-docker-images:
+          requires:
+            - lint-backend
+            - lint-frontend
+            - test-backend
+            - test-frontend
+          filters:
+            branches:
+              only:
+                - main
+      - deploy:
+          requires:
+            - build-and-push-docker-images
+          filters:
+            branches:
+              only:
+                - deploy/production
