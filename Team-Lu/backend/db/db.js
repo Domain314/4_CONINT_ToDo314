@@ -11,7 +11,7 @@ const connUrl =
 const db = new Sequelize(connUrl);
 
 const models = [
-    require('../models/todo'),
+    require('../models/todo')
 ];
 
 for (const model of models) {

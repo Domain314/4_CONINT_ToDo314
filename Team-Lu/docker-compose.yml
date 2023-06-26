@@ -1,0 +1,47 @@
+version: '3.9'
+services:
+  mariadb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=mysecretpassword
+      - MARIADB_DATABASE=tododot
+      - MARIADB_USER=todo-admin
+      - MARIADB_PASSWORD=admin-pw
+    volumes:
+      - db-data:/todo
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: 
+        [
+          "CMD-SHELL",
+          "mariadb tododot -utodo-admin -padmin-pw -e 'SELECT 1;'  || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+
+      
+  nodeapp:
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    environment:
+      - DB_DIALECT=mariadb
+      - DB_HOST=mariadb:3306
+      - DB_NAME=tododot
+      - DB_USER=todo-admin
+      - DB_PW=admin-pw
+
+volumes:
+  db-data:

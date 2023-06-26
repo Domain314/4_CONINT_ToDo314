@@ -7,7 +7,7 @@ const express = require('express')
 const router = express.Router();
 
 /* Read all todos */
-router.get('/', async (req, res, next) => {
+router.get('/', async function geta(req, res, next) {
     const todos = await db.models.todo.findAll();
 
     res.status(200).json(todos);
@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
 router.post('/',
     body('name').not().isEmpty(),
     body('name').isLength({ max: 255 }),
-    async (req, res, next) => {
+    async function posta(req, res, next) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -35,7 +35,7 @@ async function updateTodoDoneStatus(req, res, doneStatus) {
     const pk = req.params.id;
     let todo = await db.models.todo.findByPk(pk);
 
-    if (null == todo) {
+    if (todo == null) {
         res.status(404);
         return;
     }
@@ -46,12 +46,12 @@ async function updateTodoDoneStatus(req, res, doneStatus) {
 }
 
 /* Update todos with done */
-router.put('/:id/done', async (req, res, next) => {
+router.put('/:id/done', async function puta(req, res, next) {
     await updateTodoDoneStatus(req, res, true);
 });
 
 /* Update todos with undone */
-router.delete('/:id/done', async (req, res, next) => {
+router.delete('/:id/done', async function deletea(req, res, next) {
     await updateTodoDoneStatus(req, res, false);
 });
 
