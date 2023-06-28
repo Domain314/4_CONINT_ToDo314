@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   gitlab-service:
-    image: gitlab/gitlab-ce:latest
+    image: gitlab/gitlab-ce:15.5.9-ce.0
     restart: unless-stopped
     environment:
       GITLAB_OMNIBUS_CONFIG: |
