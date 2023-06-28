@@ -7,6 +7,7 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         gitlab_rails['gitlab_shell_ssh_port'] = 8822
+        gitlab_rails['initial_root_password'] = "fhtechnikumwien123"
     ports:
       - "8833:80"
       - "8822:22"

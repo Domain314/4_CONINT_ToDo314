@@ -1,47 +1,29 @@
-version: '3.9'
+version: "3.5"
+
 services:
-  mariadb:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: always
+  gitlab-service:
+    image: gitlab/gitlab-ce:latest
+    restart: unless-stopped
     environment:
-      - MARIADB_ROOT_PASSWORD=mysecretpassword
-      - MARIADB_DATABASE=tododot
-      - MARIADB_USER=todo-admin
-      - MARIADB_PASSWORD=admin-pw
-    volumes:
-      - db-data:/todo
+      GITLAB_OMNIBUS_CONFIG: |
+        gitlab_rails['gitlab_shell_ssh_port'] = 8822
+        gitlab_rails['initial_root_password'] = "fhtechnikumwien123"
     ports:
-      - "3306:3306"
-    healthcheck:
-      test: 
-        [
-          "CMD-SHELL",
-          "mariadb tododot -utodo-admin -padmin-pw -e 'SELECT 1;'  || exit 1"
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 2
+      - "8833:80"
+      - "8822:22"
+    networks:
+      - gitlab-network
 
-      
-  nodeapp:
-    restart: always
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:80"
+  gitlab-runner-service:
+    image: gitlab/gitlab-runner:alpine
+    restart: unless-stopped
     depends_on:
-      mariadb:
-        condition: service_healthy
+      - gitlab-service
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./gitlab-runner-config/config.toml:/etc/gitlab-runner/config.toml
+    networks:
+      - gitlab-network
 
-    environment:
-      - DB_DIALECT=mariadb
-      - DB_HOST=mariadb:3306
-      - DB_NAME=tododot
-      - DB_USER=todo-admin
-      - DB_PW=admin-pw
-
-volumes:
-  db-data:
+networks:
+  gitlab-network: {}
